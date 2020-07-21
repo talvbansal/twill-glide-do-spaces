@@ -99,9 +99,8 @@ return [
         'file_service' => env('FILE_LIBRARY_FILE_SERVICE', 'A17\Twill\Services\FileLibrary\Disk'),
         'acl' => env('FILE_LIBRARY_ACL', 'public-read'),
         'filesize_limit' => env('FILE_LIBRARY_FILESIZE_LIMIT', 50),
-        'allowed_extensions' => [],
         'prefix_uuid_with_local_path' => false,
-        'allowed_extenstions' => ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'],
+        'allowed_extensions' => ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'],
     ],
 
     'media_library' => [
