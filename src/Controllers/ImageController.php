@@ -2,9 +2,8 @@
 
 namespace Talvbansal\TwillGlideDoSpaces\Controllers;
 
-use Talvbansal\TwillGlideDoSpaces\Services\MediaLibrary\Glide;
 use Illuminate\Foundation\Application;
-use Illuminate\Http\Request;
+use Talvbansal\TwillGlideDoSpaces\Services\MediaLibrary\Glide;
 
 class ImageController
 {
