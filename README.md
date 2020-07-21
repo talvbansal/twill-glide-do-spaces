@@ -1,55 +1,124 @@
-# :package_description
+# Make twill work with glide and digital ocean spaces easily.
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/spatie/:package_name.svg?style=flat-square)](https://packagist.org/packages/spatie/:package_name)
-[![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/spatie/:package_name/run-tests?label=tests)](https://github.com/spatie/:package_name/actions?query=workflow%3Arun-tests+branch%3Amaster)
-[![Total Downloads](https://img.shields.io/packagist/dt/spatie/:package_name.svg?style=flat-square)](https://packagist.org/packages/spatie/:package_name)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/talvbansal/twill-glide-do-spaces.svg?style=flat-square)](https://packagist.org/packages/talvbansal/twill-glide-do-spaces)
+[![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/talvbansal/twill-glide-do-spaces/run-tests?label=tests)](https://github.com/talvbansal/twill-glide-do-spaces/actions?query=workflow%3Arun-tests+branch%3Amaster)
+[![Total Downloads](https://img.shields.io/packagist/dt/talvbansal/twill-glide-do-spaces.svg?style=flat-square)](https://packagist.org/packages/talvbansal/twill-glide-do-spaces)
 
-**Note:** Replace ```:author_name``` ```:author_username``` ```:author_email``` ```:package_name``` ```:package_description``` with their correct values in [README.md](README.md), [CHANGELOG.md](CHANGELOG.md), [CONTRIBUTING.md](CONTRIBUTING.md), [LICENSE.md](LICENSE.md) and [composer.json](composer.json) files, then delete this line. You can also run `configure-skeleton.sh` to do this automatically.
 
-This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
-
-## Support us
-
-Learn how to create a package like this one, by watching our premium video course:
-
-[![Laravel Package training](https://spatie.be/github/package-training.jpg)](https://laravelpackage.training)
-
-We invest a lot of resources into creating [best in class open source packages](https://spatie.be/open-source). You can support us by [buying one of our paid products](https://spatie.be/open-source/support-us).
-
-We highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using. You'll find our address on [our contact page](https://spatie.be/about-us). We publish all received postcards on [our virtual postcard wall](https://spatie.be/open-source/postcards).
 
 ## Installation
 
 You can install the package via composer:
 
 ```bash
-composer require spatie/package-skeleton-laravel
-```
-
-You can publish and run the migrations with:
-
-```bash
-php artisan vendor:publish --provider="Spatie\Skeleton\SkeletonServiceProvider" --tag="migrations"
-php artisan migrate
-```
-
-You can publish the config file with:
-```bash
-php artisan vendor:publish --provider="Spatie\Skeleton\SkeletonServiceProvider" --tag="config"
-```
-
-This is the contents of the published config file:
-
-```php
-return [
-];
+composer require talvbansal/twill-glide-do-spaces-laravel
 ```
 
 ## Usage
 
-``` php
-$skeleton = new Spatie\Skeleton();
-echo $skeleton->echoPhrase('Hello, Spatie!');
+This package overwrites some of twill's functionality to provide a working set of code that allows digital ocean spaces to store assets and work with glide.
+Whilst Digital Ocean has an S3 compatible api twill's uses a mix of it and a custom implementation.
+
+The glide config can be pretty gnarly to work with so the documentation below should help get things going.
+
+#### Environment
+
+Digital Ocean Spaces uses an S3 compatible API. Start by creating a new disk in your `config/filesystem.php` for the digital ocean space.
+
+```php
+// config/filesystems.php
+    ...
+    'disks' => [
+        ...
+        'do_spaces' => [
+            'use_https' => true,
+            'driver' => 's3',
+            'key' => env('DO_SPACES_KEY'),
+            'secret' => env('DO_SPACES_SECRET'),
+            'endpoint' => env('DO_SPACES_ENDPOINT'),
+            'region' => env('DO_SPACES_REGION', 'AMS3'),
+            'bucket' => env('DO_SPACES_BUCKET'),
+        ],
+
+    ],
+    ...
+```
+
+Twill uses a custom implementation of the S3 storage provider. Create the variables for the disk above and then we'll re-use them for twill as much as possible.
+```
+// .env
+DO_SPACES_KEY=xxxx
+DO_SPACES_SECRET=yyyy
+DO_SPACES_ENDPOINT=https://ams3.digitaloceanspaces.com
+DO_SPACES_REGION=AMS3
+DO_SPACES_BUCKET=bucketname
+
+S3_KEY="${DO_SPACES_KEY}"
+S3_SECRET="${DO_SPACES_SECRET}"
+S3_ENDPOINT="${DO_SPACES_ENDPOINT}"
+S3_REGION="${DO_SPACES_REGION}"
+S3_BUCKET="${DO_SPACES_BUCKET}"
+
+DO_SPACES_IMAGES_ROOT="img/"
+DO_SPACES_FILES_ROOT="files/"
+
+# the name of the storage disk...
+GLIDE_CACHE=do_spaces
+GLIDE_SOURCE=do_spaces
+GLIDE_BASE_URL=${DO_SPACES_ENDPOINT}
+```
+
+Let's also update twill to use this package's glide implementation...
+```bash
+// .env
+MEDIA_LIBRARY_ENDPOINT_TYPE=s3
+MEDIA_LIBRARY_ACL=public-read  # Optional
+MEDIA_LIBRARY_IMAGE_SERVICE=Talvbansal\TwillGlideDoSpaces\Services\MediaLibrary\Glide
+FILE_LIBRARY_ENDPOINT_TYPE=s3
+```
+
+Finally make sure these entries exist in the `config/twill.php`:
+
+```php
+// config/twill.php
+return [
+    'glide' => [
+        'source' => env('GLIDE_SOURCE', storage_path('app/public/uploads'.config('twill.media_library.local_path'))),
+        'cache' => env('GLIDE_CACHE', storage_path('app')),
+        'cache_path_prefix' => env('GLIDE_CACHE_PATH_PREFIX', 'glide_cache'),
+        'base_url' => env('GLIDE_BASE_URL', null),
+        'base_path' => env('GLIDE_BASE_PATH', 'img'),
+        'use_signed_urls' => env('GLIDE_USE_SIGNED_URLS', false),
+    ],
+
+    'file_library' => [
+        'disk' => 'twill_file_library',
+        'endpoint_type' => env('FILE_LIBRARY_ENDPOINT_TYPE', 's3'),
+        'cascade_delete' => env('FILE_LIBRARY_CASCADE_DELETE', false),
+        'local_path' => env('FILE_LIBRARY_LOCAL_PATH', 'uploads'),
+        'file_service' => env('FILE_LIBRARY_FILE_SERVICE', 'A17\Twill\Services\FileLibrary\Disk'),
+        'acl' => env('FILE_LIBRARY_ACL', 'public-read'),
+        'filesize_limit' => env('FILE_LIBRARY_FILESIZE_LIMIT', 50),
+        'allowed_extensions' => [],
+        'prefix_uuid_with_local_path' => false,
+        'allowed_extenstions' => ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'],
+    ],
+
+    'media_library' => [
+        'disk' => 'twill_media_library',
+        'endpoint_type' => env('MEDIA_LIBRARY_ENDPOINT_TYPE', 's3'),
+        'cascade_delete' => env('MEDIA_LIBRARY_CASCADE_DELETE', false),
+        'local_path' => env('MEDIA_LIBRARY_LOCAL_PATH', 'uploads'),
+        'image_service' => env('MEDIA_LIBRARY_IMAGE_SERVICE', 'A17\Twill\Services\MediaLibrary\Glide'),
+        'acl' => env('MEDIA_LIBRARY_ACL', 'private'),
+        'filesize_limit' => env('MEDIA_LIBRARY_FILESIZE_LIMIT', 50),
+        'allowed_extensions' => ['svg', 'jpg', 'gif', 'png', 'jpeg'],
+        'init_alt_text_from_filename' => true,
+        'prefix_uuid_with_local_path' => config('twill.file_library.prefix_uuid_with_local_path', false),
+        'translated_form_fields' => false,
+    ],
+
+];
 ```
 
 ## Testing
@@ -66,13 +135,9 @@ Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed re
 
 Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
-## Security
-
-If you discover any security related issues, please email freek@spatie.be instead of using the issue tracker.
-
 ## Credits
 
-- [:author_name](https://github.com/:author_username)
+- [Talv Bansal](https://github.com/talvbansal)
 - [All Contributors](../../contributors)
 
 ## License

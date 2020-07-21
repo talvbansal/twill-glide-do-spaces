@@ -1,6 +1,6 @@
 <?php
 
-namespace Spatie\Skeleton\Tests;
+namespace Talvbansal\TwillGlideDoSpaces\Tests;
 
 class ExampleTest extends TestCase
 {

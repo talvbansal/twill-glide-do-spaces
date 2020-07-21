@@ -1,22 +1,27 @@
 {
-    "name": "spatie/:package_name",
-    "description": ":package_description",
+    "name": "talvbansal/twill-glide-do-spaces",
+    "description": "Make glide work with twill and digital ocean spaces easily",
     "keywords": [
-        "spatie",
-        ":package_name"
+        "talvbansal",
+        "twill",
+        "digital ocean",
+        "laravel",
+        "twill-glide-do-spaces"
     ],
-    "homepage": "https://github.com/spatie/:package_name",
+    "homepage": "https://github.com/talvbansal/twill-glide-do-spaces",
     "license": "MIT",
     "authors": [
         {
-            "name": ":author_name",
-            "email": ":author_email",
-            "homepage": "https://spatie.be",
+            "name": "Talv Bansal",
+            "email": "talvbansal@outlook.com",
+            "homepage": "https://talvbansal.me",
             "role": "Developer"
         }
     ],
     "require": {
-        "php": "^7.4"
+        "php": "^7.4",
+        "area17/twill": "2.x",
+        "league/glide-laravel": "^1.0"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^2.16",
@@ -27,12 +32,15 @@
     },
     "autoload": {
         "psr-4": {
-            "Spatie\\Skeleton\\": "src"
-        }
+            "Talvbansal\\TwillGlideDoSpaces\\": "src"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
-            "Spatie\\Skeleton\\Tests\\": "tests"
+            "Talvbansal\\TwillGlideDoSpaces\\Tests\\": "tests"
         }
     },
     "scripts": {
@@ -47,11 +55,8 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Spatie\\Skeleton\\SkeletonServiceProvider"
-            ],
-            "aliases": {
-                "Skeleton": "Spatie\\Skeleton\\SkeletonFacade"
-            }
+                "Talvbansal\\TwillGlideDoSpaces\\TwillGlideDoSpacesServiceProvider"
+            ]
         }
     },
     "minimum-stability": "dev",
