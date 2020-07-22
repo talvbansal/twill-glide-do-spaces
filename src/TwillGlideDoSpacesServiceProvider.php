@@ -3,6 +3,7 @@
 namespace Talvbansal\TwillGlideDoSpaces;
 
 use A17\Twill\Repositories\FileRepository;
+use A17\Twill\Repositories\MediaRepository;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider;
@@ -48,6 +49,7 @@ class TwillGlideDoSpacesServiceProvider extends ServiceProvider
 
         // Overwrite Twill's File Repo with our version until this is patched...
         $this->app->bind(FileRepository::class, \Talvbansal\TwillGlideDoSpaces\Repositories\FileRepository::class);
+        $this->app->bind(MediaRepository::class, \Talvbansal\TwillGlideDoSpaces\Repositories\MediaRepository::class);
     }
 
     private function isDisk(string $diskName = ''): bool
