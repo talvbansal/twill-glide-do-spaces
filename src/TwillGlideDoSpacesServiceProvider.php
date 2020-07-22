@@ -28,7 +28,9 @@ class TwillGlideDoSpacesServiceProvider extends ServiceProvider
 
         // if the glide sources are set to disk names lets fetch the flysystem driver for glide to use...
         if ($this->isDisk(env('GLIDE_SOURCE', ''))) {
-            config()->set('twill.glide.source', Storage::disk(env('GLIDE_SOURCE', 'do_spaces'))->getDriver());
+            $diskName = env('GLIDE_SOURCE', 'do_spaces');
+            config()->set('twill.glide.source', Storage::disk($diskName)->getDriver());
+            config()->set('twill.glide.base_url', config('filesystems.disks.'.$diskName.'.endpoint'));
         }
 
         if ($this->isDisk(env('GLIDE_CACHE', ''))) {

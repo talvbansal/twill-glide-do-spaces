@@ -65,7 +65,6 @@ DO_SPACES_FILES_ROOT="files/"
 # the name of the storage disk...
 GLIDE_CACHE=do_spaces
 GLIDE_SOURCE=do_spaces
-GLIDE_BASE_URL=${DO_SPACES_ENDPOINT}
 ```
 
 Let's also update twill to use this package's glide implementation...
