@@ -35,11 +35,14 @@ class TwillGlideDoSpacesServiceProvider extends ServiceProvider
             config()->set('twill.glide.cache', Storage::disk(env('GLIDE_CACHE', 'do_spaces'))->getDriver());
         }
 
-        // Twill creates 2 new disks on the fly, here we set a new root for files uploaded by the media and file uploaders...
-        config()->set([
-            'filesystems.disks.twill_file_library.root' => env('DO_SPACES_FILES_ROOT', 'files/'),
-            'filesystems.disks.twill_media_library.root' => env('DO_SPACES_IMAGES_ROOT', 'img/'),
-        ]);
+        // Twill creates 2 new disks on the fly, here we set a new root for files uploaded by the media and file uploaders when an s3 driver is in use...
+        if ($this->usesS3Driver(config('filesystems.disks.twill_file_library'))) {
+            config()->set('filesystems.disks.twill_file_library.root', env('DO_SPACES_FILES_ROOT', 'files/'));
+        }
+
+        if ($this->usesS3Driver(config('filesystems.disks.twill_media_library'))) {
+            config()->set('filesystems.disks.twill_media_library.root', env('DO_SPACES_IMAGES_ROOT', 'img/'));
+        }
 
         // Overwrite Twill's File Repo with our version until this is patched...
         $this->app->bind(FileRepository::class, \Talvbansal\TwillGlideDoSpaces\Repositories\FileRepository::class);
@@ -48,5 +51,10 @@ class TwillGlideDoSpacesServiceProvider extends ServiceProvider
     private function isDisk(string $diskName = ''): bool
     {
         return array_key_exists($diskName, config('filesystems.disks'));
+    }
+
+    public function usesS3Driver(array $disk): bool
+    {
+        return ($disk['driver'] === 's3') ?? false;
     }
 }
